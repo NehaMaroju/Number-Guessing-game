@@ -1,0 +1,127 @@
+import 'dart:math';
+import 'package:flutter/material.dart';
+
+// Entry point of the application
+void main() {
+  runApp(MyApp());
+}
+
+class MyApp extends StatelessWidget {
+  @override
+  Widget build(BuildContext context) {
+    return MaterialApp(
+      title: 'Number Guessing Game',
+      theme: ThemeData(
+        primarySwatch: Colors.blue,
+        visualDensity: VisualDensity.adaptivePlatformDensity,
+      ),
+      home: NumberGuessingGame(),
+    );
+  }
+}
+
+// The main game screen
+class NumberGuessingGame extends StatefulWidget {
+  @override
+  _NumberGuessingGameState createState() => _NumberGuessingGameState();
+}
+
+class _NumberGuessingGameState extends State<NumberGuessingGame> {
+  int _targetNumber = 0; // The target number the player is trying to guess
+  int _minRange = 1; // Minimum range for the random number
+  int _maxRange = 100; // Maximum range for the random number
+  int _userGuess = 0; // The user's current guess
+  String _feedback = ''; // Feedback to show to the user
+  TextEditingController _controller = TextEditingController(); // Controller for the text input field
+  int _attempts = 0; // Number of attempts made by the user
+
+  // Method to generate a new random number
+  void _generateRandomNumber() {
+    final random = Random();
+    _targetNumber = random.nextInt(_maxRange - _minRange + 1) + _minRange;
+    _attempts = 0; // Reset the attempts count
+  }
+
+  // Method to check if the user's guess is correct
+  void _checkGuess() {
+    setState(() {
+      _attempts++;
+      _userGuess = int.tryParse(_controller.text) ?? 0;
+
+      if (_userGuess == _targetNumber) {
+        _feedback = 'Correct! You guessed the number in $_attempts attempts!';
+      } else if (_userGuess < _targetNumber) {
+        _feedback = 'Too Low! Try again.';
+      } else if (_userGuess > _targetNumber) {
+        _feedback = 'Too High! Try again.';
+      }
+    });
+  }
+
+  // Method to reset the game after the user wins
+  void _restartGame() {
+    setState(() {
+      _controller.clear();
+      _feedback = '';
+      _generateRandomNumber();
+    });
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _generateRandomNumber(); // Generate the first random number when the app starts
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return Scaffold(
+      appBar: AppBar(
+        title: Text('Number Guessing Game'),
+      ),
+      body: Padding(
+        padding: const EdgeInsets.all(16.0),
+        child: Center(
+          child: Column(
+            mainAxisAlignment: MainAxisAlignment.center,
+            crossAxisAlignment: CrossAxisAlignment.center,
+            children: [
+              Text(
+                'Guess the number between $_minRange and $_maxRange',
+                style: TextStyle(fontSize: 20),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              TextField(
+                controller: _controller,
+                keyboardType: TextInputType.number,
+                decoration: InputDecoration(
+                  labelText: 'Enter your guess',
+                  border: OutlineInputBorder(),
+                  contentPadding: EdgeInsets.symmetric(vertical: 10, horizontal: 15),
+                ),
+                onSubmitted: (_) => _checkGuess(),
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _checkGuess,
+                child: Text('Guess'),
+              ),
+              SizedBox(height: 20),
+              Text(
+                _feedback,
+                style: TextStyle(fontSize: 18, color: Colors.blue),
+                textAlign: TextAlign.center,
+              ),
+              SizedBox(height: 20),
+              ElevatedButton(
+                onPressed: _restartGame,
+                child: Text('Restart Game'),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
